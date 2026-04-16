@@ -1,0 +1,4 @@
+*.xlsx
+my_session.session
+session_data.session
+.env

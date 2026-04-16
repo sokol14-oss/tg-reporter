@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  reporter:
+    build: .
+    container_name: tg-reporter
+    volumes:
+      - .:/app
+    stdin_open: true # Нужно для первого запуска, чтобы ввести код из СМС
+    tty: true
+    environment:
+      - API_ID=39912728
+      - API_HASH="e2093339448e7970f6a7c037609b9446"
+      - PHONE="+79377929721"
