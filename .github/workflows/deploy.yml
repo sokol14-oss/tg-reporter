@@ -1,0 +1,23 @@
+name: Deploy Telegram Reporter
+
+on:
+  push:
+    branches:
+      - main  # Сработает при пуше в ветку main
+
+jobs:
+  deploy:
+    runs-on: debian-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/asokolova/tg-reporter
+            git pull origin main
+            chmod +x run_report.sh
+            # Если нужно перезапустить докер при обновлении:
+            # /usr/local/bin/docker-compose up -d --build reporter
