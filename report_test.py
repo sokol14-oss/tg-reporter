@@ -6,6 +6,7 @@ from datetime import datetime, timezone, timedelta
 from email.message import EmailMessage
 
 # Данные для входа
+EMAIL_PASS = os.getenv('EMAIL_PASSWORD').replace('"', '').strip()
 API_ID = int(os.getenv('API_ID').replace('"', '').strip())
 API_HASH = os.getenv('API_HASH').replace('"', '').strip()
 client = TelegramClient('session_data', API_ID, API_HASH)
@@ -26,7 +27,7 @@ def send_email(file_path):
         )
 
     with smtplib.SMTP_SSL('smtp.yandex.ru', 465) as smtp:
-        smtp.login("nastya.sokol2013@yandex.ru", "bzpvhkswafdwacia") 
+        smtp.login("nastya.sokol2013@yandex.ru", EMAIL_PASS) 
         smtp.send_message(msg)
     print("📧 Письмо успешно отправлено через Яндекс!")
 
@@ -46,6 +47,7 @@ async def main():
                 if any(word in msg.text.upper() for word in keywords):
                     all_tasks.append({
                         'Ветка': tname,
+                        'Дата': msg.date.strftime('%d.%m.%Y'),
                         'Время': (msg.date + timedelta(hours=3)).strftime('%H:%M'),
                         'Автор': (await msg.get_sender()).first_name if await msg.get_sender() else "N/A",
                         'Задача': msg.text
@@ -53,14 +55,16 @@ async def main():
 
     if all_tasks:
         df = pd.DataFrame(all_tasks)
-        df = df.sort_values(by=['Время'])
+        df = df.sort_values(by=['Дата','Время'])
         if os.path.exists(file_name):
-            with pd.ExcelWriter(file_name, mode='a', engine='openpyxl', if_sheet_exists='overlay') as writer:
-                start_row = writer.book.active.max_row
-                df.to_excel(writer, index=False, header=False, startrow=start_row)
+                df_old=pd.read_excel(file_name)
+                df_combined = pd.concat([df_old, df], ignore_index=True)
+                df_final = df_combined.drop_duplicates(subset=['Ветка','Дата', 'Время', 'Автор', 'Задача'], keep='first')
+                df_final.to_excel(file_name, index=False)
                 print(f"Добавили новые строки в {file_name}")
         else:
             df.to_excel(file_name, index=False)
+            df_final=df
             print(f"Создали новый файл {file_name}")
         # Вызываем отправку ПОСЛЕ закрытия writer, чтобы файл успел сохраниться
         send_email(file_name)
