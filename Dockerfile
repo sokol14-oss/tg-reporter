@@ -10,4 +10,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Команда для запуска (пока оставим так)
-CMD ["python", "report.py"]
+CMD ["python", "report_test.py"]
