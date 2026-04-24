@@ -39,7 +39,6 @@ async def main():
     today = datetime.now(timezone.utc).date()
     file_name = "report_main.xlsx"
     all_tasks = []
-
     for tid, tname in topics.items():
         print(f"Сканирую {tname}...")
         async for msg in client.iter_messages(chat_id, reply_to=tid, limit=100):
@@ -47,7 +46,7 @@ async def main():
                 if any(word in msg.text.upper() for word in keywords):
                     all_tasks.append({
                         'Ветка': tname,
-                        'Дата': msg.date.strftime('%d.%m.%Y'),
+                        'Дата': msg.date.date(),
                         'Время': (msg.date + timedelta(hours=3)).strftime('%H:%M'),
                         'Автор': (await msg.get_sender()).first_name if await msg.get_sender() else "N/A",
                         'Задача': msg.text
@@ -60,8 +59,14 @@ async def main():
                 df_old=pd.read_excel(file_name)
                 df_combined = pd.concat([df_old, df], ignore_index=True)
                 df_final = df_combined.drop_duplicates(subset=['Ветка','Дата', 'Время', 'Автор', 'Задача'], keep='first')
-                df_final.to_excel(file_name, index=False)
+                def bg_color(row):
+                  row_date = pd.to_datetime(row['Дата']).date()
+                  if row_date == today:
+                    return ['background-color: #d4edda'] * len(row)
+                df_styled = df_final.style.apply(bg_color, axis=1)
+                df_styled.to_excel(file_name, engine='openpyxl', index=False)
                 print(f"Добавили новые строки в {file_name}")
+                    
         else:
             df.to_excel(file_name, index=False)
             df_final=df
