@@ -60,9 +60,16 @@ async def main():
                 df_combined = pd.concat([df_old, df], ignore_index=True)
                 df_final = df_combined.drop_duplicates(subset=['Ветка','Дата', 'Время', 'Автор', 'Задача'], keep='first')
                 def bg_color(row):
-                  row_date = pd.to_datetime(row['Дата']).date()
-                  if row_date == today:
-                    return ['background-color: #d4edda'] * len(row)
+                # Создаем список пустых строк такой же длины, как наша строка данных
+                  styles = [''] * len(row)
+                  try:
+                    row_date = pd.to_datetime(row['Дата']).date()
+                    if row_date == today:
+                    # Если дата совпала, заменяем все пустые строки в списке на цвет
+                      styles = ['background-color: #d4edda'] * len(row)
+                  except Exception:
+                    pass # Если в дате мусор, просто оставляем строку без покраски
+                  return styles
                 df_styled = df_final.style.apply(bg_color, axis=1)
                 df_styled.to_excel(file_name, engine='openpyxl', index=False)
                 print(f"Добавили новые строки в {file_name}")
