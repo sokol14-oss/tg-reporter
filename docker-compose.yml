@@ -13,4 +13,5 @@ services:
       - API_HASH
       - PHONE
       - PYTHONUNBUFFERED=1
+      - EMAIL_PASSWORD
       
