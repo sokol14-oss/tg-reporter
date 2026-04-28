@@ -1,6 +1,7 @@
 import os
 import smtplib
 import pandas as pd
+import requests
 from telethon import TelegramClient
 from datetime import datetime, timezone, timedelta
 from email.message import EmailMessage
@@ -84,6 +85,19 @@ async def main():
     else:
         print(f"Задач с ключевыми словами {keywords} не найдено.")
         print(f"Дата выполнения скрипта{today}")
-
-with client:
+        
+def send_alert(message):
+    token=os.getenv("BOT_TOKEN")
+    chat_id=os.getenv("ADMIN_ID")
+    url=f"https://api.telegram.org/bot{token}/sendMessage"
+    data = {"chat_id": chat_id, "text": f"🚨 АХТУНГ! \n\n{message}"}
+    try:
+        requests.post(url, data=data)
+    except Exception as e:
+        print(f"Даже алерт не отправился: {e}")
+try:
+  with client:
     client.loop.run_until_complete(main())
+except Exception as e:
+    send_alert(str(e))
+    raise e

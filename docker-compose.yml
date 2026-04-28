@@ -14,4 +14,6 @@ services:
       - PHONE
       - PYTHONUNBUFFERED=1
       - EMAIL_PASSWORD
+      - BOT_TOKEN
+      - ADMIN_ID
       

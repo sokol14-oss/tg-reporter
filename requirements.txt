@@ -2,3 +2,4 @@ telethon>=1.30.0
 pandas
 openpyxl
 jinja2
+requests
