@@ -38,12 +38,13 @@ async def main():
     keywords = ["ITHELP", "SBLEQUIP"]
     
     today = datetime.now(timezone.utc).date()
+    seven_days_ago = today - timedelta(days=7)
     file_name = "report_main.xlsx"
     all_tasks = []
     for tid, tname in topics.items():
         print(f"Сканирую {tname}...")
         async for msg in client.iter_messages(chat_id, reply_to=tid, limit=100):
-            if msg.date.date() == today and msg.text:
+            if seven_days_ago <= msg.date.date() <= today and msg.text:
                 if any(word in msg.text.upper() for word in keywords):
                     all_tasks.append({
                         'Ветка': tname,
